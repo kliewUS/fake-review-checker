@@ -5,6 +5,8 @@ import re
 import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+import matplotlib.pyplot as plt
+from wordcloud import WordCloud
 nltk.download('stopwords')
 nltk.download('punkt_tab')
 
@@ -86,25 +88,40 @@ def process_file(uploaded_file):
                 break
         
         if chosen_column is None:
-            chosen_column = st.selectbox("Select the column that contains the reviews", df.columns)
+            chosen_column = st.selectbox("Select the column that contains the reviews", df.columns, index=None, placeholder="Select the review column.")
 
-        df[chosen_column] = df[chosen_column].apply(clean_text)
-        df[chosen_column] = df[chosen_column].apply(remove_stop_words)
-        df[chosen_column] = df[chosen_column].apply(word_tokenize)
-        df[chosen_column] = df[chosen_column].apply(lambda x: ' '.join(x))        
+        try:
+            df[chosen_column] = df[chosen_column].apply(clean_text)
+            df[chosen_column] = df[chosen_column].apply(remove_stop_words)
+            df[chosen_column] = df[chosen_column].apply(word_tokenize)
+            df[chosen_column] = df[chosen_column].apply(lambda x: ' '.join(x))        
 
-        input_vectorized = vectorizer.transform(df[chosen_column])
-        prediction = model.predict(input_vectorized)      
-        probs = model.predict_proba(input_vectorized)
-        df["Prediction"] = ["Fake" if p == 1 else "Real" for p in prediction]
-        df["Confidence"] = [round(probs[i][pred] * 100, 2) for i, pred in enumerate(prediction)]
+            input_vectorized = vectorizer.transform(df[chosen_column])
+            prediction = model.predict(input_vectorized)      
+            probs = model.predict_proba(input_vectorized)
+            df["Prediction"] = ["Fake" if p == 1 else "Real" for p in prediction]
+            df["Confidence"] = [round(probs[i][pred] * 100, 2) for i, pred in enumerate(prediction)]
+        except:
+            st.write("The column you have chosen is not the review column. Please pick the review column.")
 
         return df, chosen_column
+'''
+    Combines all the text of all of the reviews and generates the word cloud.
+'''
+def generate_wordcloud(text_res):
+    text = " ".join(text_res)
+    wordcloud = WordCloud(width=600, height=300, background_color="white").generate(text)
+
+    fig, ax = plt.subplots(figsize=(6,3))
+    ax.imshow(wordcloud)
+    ax.axis("off")
+    st.pyplot(fig)
 
 '''
     Shows the classify page. Gives an option to manually type in a review or a upload a csv or json file.
     Upon checking the review(s), it will determine if the review is real or fake along with a confidence percentage.
-    Additional, if upload option was chosen, it will give an option to download the results.
+    Additional, if upload option was chosen, it will showcase a word cloud of the most common words of the real and fake reviews as well as
+    giving an option to download the results.
 '''
 def show_classify_page():
     st.title("Fake Review Checker")
@@ -122,7 +139,24 @@ def show_classify_page():
         uploaded_file = st.file_uploader("Upload a CSV or JSON file", type=["csv", "json"])
         if uploaded_file:
             df, chosen_column = process_file(uploaded_file)
-            if df is not None:
+            if df is not None and chosen_column is not None and "Prediction" in df and "Confidence" in df:
                 st.write(df[[chosen_column, "Prediction", "Confidence"]].head())
                 st.write("Review classification breakdown", df["Prediction"].value_counts("Real"))
-                st.download_button("Download Results", df.to_csv(index=False), "predictions.csv", "text/csv")                                     
+                st.download_button("Download Results", df.to_csv(index=False), "predictions.csv", "text/csv")
+
+                st.subheader("Word Cloud Review Analysis")
+
+                col1, col2 = st.columns(2, border=True)
+                with col1:
+                    if len(df[df["Prediction"] == "Real"][chosen_column]) > 0:
+                        st.write("Real Review Word Cloud")
+                        generate_wordcloud(df[df["Prediction"] == "Real"][chosen_column])
+                    else:
+                        st.subheader("No real reviews found.")
+
+                with col2:
+                    if len(df[df["Prediction"] == "Fake"][chosen_column]) > 0:
+                        st.write("Fake Review Word Cloud")
+                        generate_wordcloud(df[df["Prediction"] == "Fake"][chosen_column])
+                    else:
+                        st.subheader("No fake reviews found.")
