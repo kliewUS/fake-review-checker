@@ -3,7 +3,7 @@
 
 ## Introduction
 
-This web application classifies if the review(s) provided via text or file in CSV or JSON format are real or fake. A confidence rating is provided upon classification, determing how confident the mode is in classifying the reviews.
+This web application classifies if the review(s) provided via text or file in CSV or JSON format are real or fake. A confidence rating is provided upon classification, determining how confident the mode is in classifying the reviews.
 
 ## Features
 
