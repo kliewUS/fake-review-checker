@@ -187,3 +187,7 @@ pyrightconfig.json
 # End of https://www.toptal.com/developers/gitignore/api/jupyternotebooks,python
 
 .DS_Store
+
+out.csv
+test.csv
+Untitled.ipynb
