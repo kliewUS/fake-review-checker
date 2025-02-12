@@ -19,5 +19,11 @@ Users are able to manually input text in the text area. Upon clicking the button
 
 Users are able to upload a CSV or JSON file to bulk check reviews. A dropdown option to select the review column will be provided if the reviews column isn't found. Once the reviews have been classified, a table will show up with each row containing the review, the classification, and the confidence rating. There is also an option to download the results in a CSV file.
 
+### Word Cloud Analysis
+
+![Word Cloud Analysis Feature](/images/word_cloud.png)
+
+Upon classification of the reviews, users are shown wordclouds of both real and fake reviews if applicable, showing the most common words in these types of reviews.
+
 ## Credits
 [Fake Review Dataset by Mexwell](https://www.kaggle.com/datasets/mexwell/fake-reviews-dataset/data)
